@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>AidSync</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
+    <link rel="icon" href="{{ url_for('static', filename='ambulance.ico') }}" type="image/x-icon">
+</head>
+<body>
+    <div class="container">
+        <h1>AidSync</h1>
+
+        {% if error %}
+            <div class="error">{{ error }}</div>
+        {% endif %}
+
+        {% if prediction %}
+            <div class="prediction">Predicted Disease: <strong>{{ prediction }}</strong></div>
+        {% endif %}
+
+        <form method="POST" action="/">
+            <input type="text" id="symptom-search" placeholder="Search symptoms..." onkeyup="filterSymptoms()">
+
+            <div id="symptom-list">
+                {% for col in symptoms %}
+                    <button type="button" class="symptom-btn" onclick="addSymptom('{{ col }}', this)">
+                        {{ col.replace('_', ' ') }}
+                    </button>
+                {% endfor %}
+            </div>
+
+            <div id="selected-symptoms"></div>
+
+            <input type="hidden" name="selected_symptoms" id="selected-input">
+            <input type="submit" value="Predict Disease">
+        </form>
+    </div>
+
+    <script>
+        let selected = [];
+
+        function addSymptom(symptom, button) {
+            if (!selected.includes(symptom)) {
+                selected.push(symptom);
+                button.classList.add('selected');
+                updateSelected();
+            } else {
+                selected = selected.filter(s => s !== symptom);
+                button.classList.remove('selected');
+                updateSelected();
+            }
+        }
+
+        function updateSelected() {
+            document.getElementById('selected-input').value = selected.join(',');
+            const container = document.getElementById('selected-symptoms');
+            container.innerHTML = '';
+            selected.forEach(symptom => {
+                const tag = document.createElement('span');
+                tag.className = 'selected-tag';
+                tag.innerText = symptom.replaceAll('_', ' ');
+                container.appendChild(tag);
+            });
+        }
+
+        function filterSymptoms() {
+            const input = document.getElementById('symptom-search').value.toLowerCase();
+            const buttons = document.getElementsByClassName('symptom-btn');
+            for (let btn of buttons) {
+                const text = btn.innerText.toLowerCase();
+                btn.style.display = text.includes(input) ? 'inline-block' : 'none';
+            }
+        }
+    </script>
+</body>
+</html>
